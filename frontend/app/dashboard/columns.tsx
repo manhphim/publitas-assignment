@@ -75,6 +75,7 @@ export const columns: ColumnDef<Category>[] = [
 					width={50}
 					height={50}
 					alt='image'
+					className='h-16'
 				/>
 			);
 		},
