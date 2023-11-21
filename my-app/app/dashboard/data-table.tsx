@@ -13,6 +13,7 @@ import {
 	ColumnFiltersState,
 	getFilteredRowModel,
 	VisibilityState,
+	Row,
 } from '@tanstack/react-table';
 
 import {
@@ -34,6 +35,8 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
+import { Label } from '@/components/ui/label';
+
 import {
 	Table,
 	TableBody,
@@ -42,11 +45,13 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+
+import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DataTablePagination } from '../../components/Pagination';
-import { Category } from '@/model/Category';
-
+import { isWithinRange } from './columns';
+import { parseISO, format } from 'date-fns';
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
@@ -59,6 +64,7 @@ export function DataTable<TData, TValue>({
 	const [internalData, setInternalData] = useState<TData[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [globalFilter, setGlobalFilter] = useState<string>('');
 	const [rowSelection, setRowSelection] = useState({});
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
@@ -67,6 +73,22 @@ export function DataTable<TData, TValue>({
 		setInternalData(data);
 	}, [data]);
 
+	const filterActiveCategories = (data: Category[]) => {
+		const currentDate = new Date();
+		return data.filter((category) => {
+			if (category.activeFrom && category.activeUntil) {
+				const activeFrom = parseISO(
+					`${new Date().getFullYear()}-${category.activeFrom}`
+				);
+				const activeUntil = parseISO(
+					`${new Date().getFullYear()}-${category.activeUntil}`
+				);
+				return currentDate >= activeFrom && currentDate <= activeUntil;
+			}
+			return false;
+		});
+	};
+
 	const table = useReactTable({
 		data: internalData,
 		columns,
@@ -74,14 +96,19 @@ export function DataTable<TData, TValue>({
 		getPaginationRowModel: getPaginationRowModel(),
 		onSortingChange: setSorting,
 		getSortedRowModel: getSortedRowModel(),
+		filterFns: {
+			getActiveCategories: isWithinRange,
+		},
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
+		onGlobalFilterChange: setGlobalFilter,
 		onRowSelectionChange: setRowSelection,
 		onColumnVisibilityChange: setColumnVisibility,
 		state: {
 			sorting,
 			columnFilters,
 			columnVisibility,
+
 			rowSelection,
 		},
 	});
@@ -99,10 +126,18 @@ export function DataTable<TData, TValue>({
 		table.toggleAllRowsSelected(false);
 	};
 
+	const handleFilterActiveCategories = (value: boolean) => {
+		if (value) {
+			const filteredData = filterActiveCategories(data);
+			setInternalData(filteredData);
+		} else {
+			setInternalData(data);
+		}
+	};
 	return (
 		<div>
 			<div className='flex items-center py-4'>
-				<div className='flex gap-4'>
+				<div className='flex items-center gap-4'>
 					<Input
 						placeholder='Search category...'
 						value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
@@ -142,6 +177,11 @@ export function DataTable<TData, TValue>({
 							</AlertDialogFooter>
 						</AlertDialogContent>
 					</AlertDialog>
+					<Switch
+						id='activeCategory'
+						onCheckedChange={handleFilterActiveCategories}
+					/>
+					<Label htmlFor='activeCategory'>Active category</Label>
 				</div>
 
 				<DropdownMenu>

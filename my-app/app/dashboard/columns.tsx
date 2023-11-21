@@ -1,21 +1,30 @@
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { Category } from '@/model/Category';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTableColumnHeader } from '@/components/ColumnHeader';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
 import ActionDialog from '@/components/ActionDialog';
+
+export const isWithinRange = (
+	row: Row<Category>,
+	columnId: string,
+	value: any
+) => {
+	const date: Date = row.getValue(columnId);
+	const [start, end] = value; // value => two date input values
+	//If one filter defined and date is null filter it
+	if ((start || end) && !date) return false;
+	if (start && !end) {
+		return date.getTime() >= start.getTime();
+	} else if (!start && end) {
+		return date.getTime() <= end.getTime();
+	} else if (start && end) {
+		return date.getTime() >= start.getTime() && date.getTime() <= end.getTime();
+	} else return true;
+};
+
 export const columns: ColumnDef<Category>[] = [
 	{
 		id: 'select',
@@ -48,15 +57,13 @@ export const columns: ColumnDef<Category>[] = [
 	},
 	{
 		accessorKey: 'activeFrom',
-		header: ({ column }) => (
-			<DataTableColumnHeader column={column} title='Active from' />
-		),
+		header: 'Active from',
+		filterFn: isWithinRange,
 	},
 	{
 		accessorKey: 'activeUntil',
-		header: ({ column }) => (
-			<DataTableColumnHeader column={column} title='Active until' />
-		),
+		header: 'Active until',
+		filterFn: isWithinRange,
 	},
 	{
 		accessorKey: 'iconUrl',

@@ -11,18 +11,8 @@ const fetchData = async () => {
 	return objectData;
 };
 
-// const deleteCategory = async (id: string) => {
-// 	const objectData = await fetchData();
-// 	const filteredData = objectData.filter((item: any) => item.id !== id);
-// 	// const stringifiedData = JSON.stringify(filteredData);
-// };
-
 export default async function Page() {
 	const data = await fetchData();
-
-	const handleDeleteCategory = (id: string) => {
-		console.log(id);
-	};
 
 	return (
 		data && (
