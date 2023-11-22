@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, flexRender } from '@tanstack/react-table';
-import { columns } from '@/app/dashboard/columns';
+import { columns } from '@/components/columns';
 import {
 	Table as TableComponent,
 	TableBody,

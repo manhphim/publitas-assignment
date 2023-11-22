@@ -21,6 +21,7 @@ import { deleteCategory } from '@/api/category';
 import TableControl from '@/components/TableControl';
 import { filterActiveCategories } from '@/utils';
 import VisibilityToggler from '@/components/VisibilityToggler';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -37,6 +38,8 @@ export function DataTable<TData, TValue>({
 	const [rowSelection, setRowSelection] = useState({});
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
+
+	const { toast } = useToast();
 
 	useEffect(() => {
 		setInternalData(data);
@@ -76,6 +79,10 @@ export function DataTable<TData, TValue>({
 
 			const newData = data.filter((item) => !items.includes(item));
 			setInternalData(newData);
+
+			toast({
+				description: 'Delete successfully.',
+			});
 		} catch (error) {
 			console.log(error);
 		}

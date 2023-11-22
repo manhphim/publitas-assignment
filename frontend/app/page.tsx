@@ -1,8 +1,8 @@
 'use client';
 
-import { DataTable } from './data-table';
+import { DataTable } from '../components/data-table';
 import React, { useState, useEffect } from 'react';
-import { columns } from './columns';
+import { columns } from '../components/columns';
 import { getCategories } from '@/api/category';
 export default function Page() {
 	const [data, setData] = useState<any[]>([]);
